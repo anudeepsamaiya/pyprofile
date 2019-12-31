@@ -53,7 +53,7 @@ class Profiler(object):
         out = StringIO()
         stats = pstats.Stats(self.profiler, stream=out)
         stats.dump_stats(
-            f"../profiling_data/"
+            f"./profiling_data/"
             f"stats_{self.name}"
             f"_{int(datetime.now().timestamp())}.prof"
         )
@@ -71,7 +71,7 @@ class Profiler(object):
         res = "ncalls" + stats.split("ncalls")[-1]
         # save it to disk
         with open(
-            f"../profiling_data/"
+            f"./profiling_data/"
             f"stats_{self.name}"
             f"_{int(datetime.now().timestamp())}.csv",
             "w",
