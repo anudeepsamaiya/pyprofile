@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyprofile", # Replace with your own username
-    version="0.0.1",
+    version="0.0.2",
     author="Anudeep Samaiya",
     author_email="anudeepsamaiya@gmail.com",
     description="Python profiling and visualizing package.",
