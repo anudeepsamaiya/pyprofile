@@ -40,7 +40,11 @@ class Profiler(object):
     """
 
     def __init__(
-        self, name, start=False, profile_sql=False, connection_names=("default",),
+        self,
+        name,
+        start=False,
+        profile_sql=False,
+        connection_names=("default",),
     ):
         """Constructor
 
@@ -187,7 +191,11 @@ class Profiler(object):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if exc_type is not None and exc_value is not None and traceback is not None:
+        if (
+            exc_type is not None
+            and exc_value is not None
+            and traceback is not None
+        ):
             self.log.exception(
                 '%s: Exception "%s" with value "%s" intercepted while profiling',
                 self.name,
@@ -199,7 +207,8 @@ class Profiler(object):
 
     def __can_profile_sql(self):
         return connections is not None and (
-            getattr(settings, "PROFILING_SQL_QUERIES", False) or self.profile_sql
+            getattr(settings, "PROFILING_SQL_QUERIES", False)
+            or self.profile_sql
         )
 
     def __get_sql_stats_for_connection(self, connection_name):
@@ -239,10 +248,14 @@ def profile(*fn, **options):
     save_stats = options.pop("save_stats", True)
     if save_stats:
         manage_buffer = False if stats_buffer else True
-        file_name = settings.PROFILING_STATS_FILE % int(datetime.now().timestamp())
+        file_name = settings.PROFILING_STATS_FILE % int(
+            datetime.now().timestamp()
+        )
         stats_buffer = stats_buffer or open(file_name, "w")
     if options:
-        raise TypeError("Unsupported keyword arguments: %s" % ",".join(options.keys()))
+        raise TypeError(
+            "Unsupported keyword arguments: %s" % ",".join(options.keys())
+        )
 
     def decorator(func):
         try:
@@ -267,10 +280,15 @@ def profile(*fn, **options):
                 and args[0].__class__.__dict__.get(func.__name__).__name__
                 == func.__name__
             ):
-                profiler_name = "%s.%s" % (args[0].__class__.__name__, func.__name__,)
+                profiler_name = "%s.%s" % (
+                    args[0].__class__.__name__,
+                    func.__name__,
+                )
             else:
                 if hasattr(func, "__name__"):
-                    profiler_name = "{0}.{1}".format(func.__module__, func.__name__)
+                    profiler_name = "{0}.{1}".format(
+                        func.__module__, func.__name__
+                    )
                 elif hasattr(func, "__class__"):
                     profiler_name = func.__class__.__name__
                 else:

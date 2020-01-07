@@ -36,12 +36,11 @@ class RequestProfilingMiddleware(object):
 
     def __call__(self, request):
         self.query_params = dict(request.GET)
+        self.profiling_enabled = settings.DEBUG and settings.PROFILING
         path = request.get_full_path()
         path = path.split("?")[0]
 
-        if not (
-            (settings.DEBUG and settings.PROFILING) and self.query_params.get("prof")
-        ):
+        if not (self.profiling_enabled and self.query_params.get("prof")):
             return self.get_response(request)
 
         with Profiler(str(path).replace("/", "_")) as self.prof:
@@ -50,12 +49,14 @@ class RequestProfilingMiddleware(object):
 
         if response and response.content and stats_str:
             response.content = "<pre>" + stats_str + "</pre>"
-        response.content = "\n".join(response.content.decode().split("\n")[:100])
+        response.content = "\n".join(
+            response.content.decode().split("\n")[:100]
+        )
         response.content += str.encode(self.summary_for_files(stats_str))
         return response
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
-        if (settings.DEBUG and settings.PROFILING) and self.query_params.get("prof"):
+        if self.profiling_enabled and self.query_params.get("prof"):
             return self.prof.profiler.runcall(
                 callback, request, *callback_args, **callback_kwargs
             )
