@@ -1,0 +1,22 @@
+# https://editorconfig.org/
+
+root=true
+
+[*]
+indent_style=space
+indent_size=4
+insert_final_newline=true
+trim_trailing_whitespace=true
+end_of_line=lf
+charset=utf-8
+
+# Docstrings and comments use max_line_length=72
+[*.py]
+max_line_length=88
+line_length=79
+multi_line_output=3
+include_trailing_comma=True
+force_grid_wrap=0
+use_parentheses=True
+order_by_type=True
+combine_star=True
