@@ -43,7 +43,9 @@ class RequestProfilingMiddleware(object):
         if not (self.profiling_enabled and self.query_params.get("prof")):
             return self.get_response(request)
 
-        with Profiler(str(path).replace("/", "_")) as self.prof:
+        with Profiler(
+            str(path).replace("/", "_"), settings.PROFILER_DUMP
+        ) as self.prof:
             response = self.get_response(request)
         stats_str = self.prof.stats_str
 
