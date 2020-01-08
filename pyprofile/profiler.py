@@ -6,7 +6,13 @@ from datetime import datetime
 from io import StringIO
 from time import time
 
-from gprof2dot import TEMPERATURE_COLORMAP, DotWriter, PstatsParser
+from gprof2dot import (
+    TEMPERATURE_COLORMAP,
+    DotWriter,
+    PstatsParser,
+    TOTAL_TIME_RATIO,
+    TIME_RATIO,
+)
 
 
 @contextmanager
@@ -34,6 +40,10 @@ def profile(func, *args, **kwargs):
                 functools.update_wrapper(wrapper, func)
             except AttributeError:
                 pass
+
+            with Profiler(profiler_name, profile_sql=profile_sql):
+                to_return = prof.runcall(func, *args, **kwargs)
+            return to_return
 
 
 class Profiler(object):
@@ -76,10 +86,16 @@ class Profiler(object):
     def _publish_stats_to_dot(self, stats: str, *args, **kwargs):
         if not self.dump_dir:
             return
-        profile = PstatsParser(self._prof_file).parse()
-        with open(self._dot_file, "wt") as output:
+        with open(self._dot_file, "wt", encoding="UTF-8") as output:
+            theme = TEMPERATURE_COLORMAP
+            theme.skew = 1.0
+            profile = PstatsParser(self._prof_file).parse()
+            profile.prune(0.5 / 100.0, 0.1 / 100.0, None, False)
             dot = DotWriter(output)
-            dot.graph(profile, TEMPERATURE_COLORMAP)
+            dot.strip = False
+            dot.wrap = False
+            dot.show_function_events = [TOTAL_TIME_RATIO, TIME_RATIO]
+            dot.graph(profile, theme)
 
     def _publish_stats_to_graph(self, stats: str, *args, **kwargs):
         if not self.dump_dir:
