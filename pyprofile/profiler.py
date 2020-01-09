@@ -1,49 +1,47 @@
+"""Simple cProfile based python profiler.
+"""
+
 import cProfile
 import functools
+import inspect
 import pstats
-from contextlib import contextmanager
 from datetime import datetime
 from io import StringIO
-from time import time
 
 from gprof2dot import (
     TEMPERATURE_COLORMAP,
+    TIME_RATIO,
+    TOTAL_TIME_RATIO,
     DotWriter,
     PstatsParser,
-    TOTAL_TIME_RATIO,
-    TIME_RATIO,
 )
 
-
-@contextmanager
-def _timing(description: str) -> None:
-    start = time()
-    yield
-    ellapsed_time = time() - start
-    print(f"{description}: {ellapsed_time}")
+__all__ = [
+    "profile",
+    "Profiler",
+]
 
 
-def profile(func, *args, **kwargs):
+def profile(*fn, **options):
+    """Profiler as a decorator.
+    """
+    name = options.get("name")
+
     def decorator(func):
-        try:
-            func.__name__
-        except AttributeError:
-            # This decorator is on top of another decorator implemented as class
-            func.__name__ = func.__class__.__name__
-        try:
-            functools.update_wrapper(decorator, func)
-        except AttributeError:
-            pass
-
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            try:
-                functools.update_wrapper(wrapper, func)
-            except AttributeError:
-                pass
-
-            with Profiler(profiler_name, profile_sql=profile_sql):
-                to_return = prof.runcall(func, *args, **kwargs)
+            with Profiler(name or func.__name__, **options):
+                to_return = func(*args, **kwargs)
             return to_return
+
+        return wrapper
+
+    if fn and inspect.isfunction(fn[0]):
+        # Called with no parameter
+        return decorator(fn[0])
+    else:
+        # Called with a parameter
+        return decorator
 
 
 class Profiler(object):
@@ -53,6 +51,10 @@ class Profiler(object):
             f"stats_{name.strip()}_{int(datetime.now().timestamp())}"
         )
         self.dump_dir = dump_dir
+        self.save_stats = kwargs.pop("save_stats", False) and dump_dir
+        self.write_csv = kwargs.pop("write_csv", True)
+        self.write_dot = kwargs.pop("write_dot", True)
+        self.write_png = kwargs.pop("write_png", True)
         self._prof_file = f"{dump_dir}/{self.name}.prof"
         self._csv_file = f"{dump_dir}/{self.name}.csv"
         self._dot_file = f"{dump_dir}/{self.name}.dot"
@@ -73,7 +75,7 @@ class Profiler(object):
         self.profiler.disable()
         out = StringIO()
         stats = pstats.Stats(self.profiler, stream=out)
-        self.dump_dir and stats.dump_stats(self._prof_file)
+        self.save_stats and stats.dump_stats(self._prof_file)
         stats.sort_stats("ncalls", "tottime", "cumtime")
         stats.print_stats()
         return out.getvalue()
@@ -84,7 +86,7 @@ class Profiler(object):
         return self
 
     def _publish_stats_to_dot(self, stats: str, *args, **kwargs):
-        if not self.dump_dir:
+        if not self.save_stats:
             return
         with open(self._dot_file, "wt", encoding="UTF-8") as output:
             theme = TEMPERATURE_COLORMAP
@@ -98,12 +100,12 @@ class Profiler(object):
             dot.graph(profile, theme)
 
     def _publish_stats_to_graph(self, stats: str, *args, **kwargs):
-        if not self.dump_dir:
+        if not self.save_stats:
             return
         return None
 
     def _publish_stats_to_csv(self, stats: str, *args, **kwargs):
-        if not self.dump_dir:
+        if not self.save_stats:
             return
         # chop the string into a csv-like buffer
         res = "ncalls" + stats.split("ncalls")[-1]
