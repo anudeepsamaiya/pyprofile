@@ -23,4 +23,4 @@ multi_line_output=3
 not_skip="__init__.py"
 
 known_first_party="pyprofile"
-known_third_party=["django", "gprof2dot", "setuptools"]
+known_third_party=["django", "gprof2dot", "pytest", "setuptools"]
