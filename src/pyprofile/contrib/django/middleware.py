@@ -6,7 +6,6 @@
 import re
 
 from django.conf import settings
-
 from pyprofile import Profiler
 
 words_re = re.compile(r"\s+")
@@ -25,7 +24,8 @@ class RequestProfilingMiddleware(object):
 
     Add the "prof" key to query string by appending ?prof (or &prof=)
     and you'll see the profiling results in your browser.
-    It's set up to only be available in django's debug mode, is available for superuser otherwise,
+    It's set up to only be available in django's debug mode,
+    is available for superuser otherwise,
     but you really shouldn't add this middleware to any production configuration.
 
     WARNING: It uses cProfile profiler which is not thread safe.
@@ -99,12 +99,12 @@ class RequestProfilingMiddleware(object):
                 _sum += time
                 _file = fields[6].split(":")[0]
 
-                if not _file in mystats:
+                if _file not in mystats:
                     mystats[_file] = 0
                 mystats[_file] += time
 
                 group = self.get_group(_file)
-                if not group in mygroups:
+                if group not in mygroups:
                     mygroups[group] = 0
                 mygroups[group] += time
 
