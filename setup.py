@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 if __name__ == "__main__":
     setuptools.setup(
         name="pyprofile",
-        version="0.1.1",
+        version="0.1.2",
         author="Anudeep Samaiya",
         author_email="anudeepsamaiya@gmail.com",
         description="Python profiling and visualizing package.",
