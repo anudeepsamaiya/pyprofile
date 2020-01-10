@@ -86,7 +86,7 @@ class Profiler(object):
         return self
 
     def _publish_stats_to_dot(self, stats: str, *args, **kwargs):
-        if not self.save_stats:
+        if not self.save_stats or not self.write_dot:
             return
         with open(self._dot_file, "wt", encoding="UTF-8") as output:
             theme = TEMPERATURE_COLORMAP
@@ -100,12 +100,12 @@ class Profiler(object):
             dot.graph(profile, theme)
 
     def _publish_stats_to_graph(self, stats: str, *args, **kwargs):
-        if not self.save_stats:
+        if not self.save_stats or not self.write_png:
             return
         return None
 
     def _publish_stats_to_csv(self, stats: str, *args, **kwargs):
-        if not self.save_stats:
+        if not self.save_stats or not self.write_csv:
             return
         # chop the string into a csv-like buffer
         res = "ncalls" + stats.split("ncalls")[-1]

@@ -44,7 +44,12 @@ class RequestProfilingMiddleware(object):
             return self.get_response(request)
 
         with Profiler(
-            str(path).replace("/", "_"), settings.PROFILER_DUMP
+            str(path).replace("/", "_"),
+            dump_dir=settings.PROFILER_DUMP,
+            save_stats=settings.PROFILER_SAVE_STATS,
+            write_csv=settings.PROFILER_WRITE_CSV,
+            write_dot=settings.PROFILER_WRITE_DOT,
+            write_png=settings.PROFILER_WRITE_PNG,
         ) as self.prof:
             response = self.get_response(request)
         stats_str = self.prof.stats_str
